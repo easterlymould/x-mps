@@ -449,11 +449,13 @@
 <span class="date" id="most-recent-entry-date">Loading...</span>
 </div>
 </div>
+<p style="font-size:0.84em;color:#718096;margin-bottom:24px;">Figures are based on declared amounts in the parliamentary register. Declarations may lag behind actual payments. See <a href="about.html" style="color:#2b6cb0;">About</a> for full methodology and limitations.</p>
 <div id="summary-stats"></div>
 <div id="content-area">
 <div class="loading" id="loading">Loading data...</div>
 <div class="no-data" id="no-data" style="display:none;"></div>
 <div id="mp-list"></div>
+<noscript><p style="text-align:center;padding:40px;color:#718096;">This tool requires JavaScript to load and display parliamentary data.</p></noscript>
 </div>
 </div>
 <footer>
@@ -487,7 +489,11 @@ function parseDateFromSummary(summary) {
 function formatAmount(value) {
   if (value >= 1000000) return (value / 1000000).toFixed(1) + "m";
   if (value >= 1000) return (value / 1000).toFixed(1) + "k";
-  return value.toLocaleString();
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatCurrency(value) {
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function capitaliseFirst(str) {
@@ -728,7 +734,7 @@ try {
           </div>
           <div class="mp-right">
             <div style="text-align:right">
-              <div class="mp-total">&pound;${mp.total.toLocaleString()}</div>
+              <div class="mp-total">&pound;${formatCurrency(mp.total)}</div>
               <div class="mp-payment-count">${mp.payments.length} payment${mp.payments.length !== 1 ? "s" : ""}${mp.totalHours ? " &middot; " + mp.totalHours + " hrs" : ""}</div>
             </div>
             <span class="mp-chevron" aria-hidden="true">&#9654;</span>
@@ -740,7 +746,7 @@ try {
               <div class="payment-item">
                 <span class="payment-date">Received ${formatDateHuman(p.date)}</span>
                 <span>
-                  <span class="payment-value">&pound;${p.value.toLocaleString()}</span>
+                  <span class="payment-value">&pound;${formatCurrency(p.value)}</span>
                   ${p.hours ? `<span class="payment-hours">(${p.hours} hrs)</span>` : ""}
                 </span>
               </div>
