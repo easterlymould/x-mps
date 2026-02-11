@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>X MPs</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #eef1f5;
+    color: #2d3748;
+    line-height: 1.5;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    color: #fff;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.35em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  header h1 a {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  header h1 a:visited {
+    color: #fff;
+  }
+
+  header h1 a:hover {
+    text-decoration: underline;
+  }
+
+  header nav {
+    display: flex;
+    gap: 20px;
+  }
+
+  header nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9em;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    font-weight: 500;
+  }
+
+  header nav a:hover,
+  header nav a.active {
+    opacity: 1;
+  }
+
+  #container {
+    max-width: 780px;
+    margin: 32px auto;
+    padding: 0 24px;
+  }
+
+  #container > h1 {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
+  }
+
+  .intro {
+    margin-bottom: 20px;
+    line-height: 1.7;
+    color: #4a5568;
+    font-size: 0.95em;
+  }
+
+  .intro a {
+    color: #2b6cb0;
+    text-decoration: none;
+    border-bottom: 1px solid #bee3f8;
+    transition: border-color 0.2s;
+  }
+
+  .intro a:hover {
+    border-bottom-color: #2b6cb0;
+  }
+
+  #container > p {
+    color: #4a5568;
+    font-size: 0.95em;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  #container > p a {
+    color: #2b6cb0;
+    text-decoration: none;
+    border-bottom: 1px solid #bee3f8;
+    transition: border-color 0.2s;
+  }
+
+  #container > p a:hover {
+    border-bottom-color: #2b6cb0;
+  }
+
+  .data-freshness {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 28px;
+    font-size: 0.84em;
+    color: #4a5568;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .data-freshness-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .data-freshness-item strong {
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .data-freshness-item .date {
+    font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+    font-size: 0.92em;
+    background: #edf2f7;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #2d3748;
+  }
+
+  #summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.75em;
+    font-weight: 800;
+    color: #1a202c;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.8em;
+    color: #718096;
+    margin-top: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* MP list */
+  #mp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mp-row {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .mp-row:hover {
+    border-color: #a0aec0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  }
+
+  .mp-row.expanded {
+    border-color: #2b6cb0;
+    box-shadow: 0 2px 12px rgba(43, 108, 176, 0.1);
+  }
+
+  .mp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .mp-header:hover {
+    background: #f7fafc;
+  }
+
+  .mp-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .mp-name {
+    font-weight: 700;
+    font-size: 1.05em;
+    color: #1a202c;
+  }
+
+  .mp-party {
+    font-size: 0.82em;
+    color: #718096;
+    font-weight: 500;
+  }
+
+  .mp-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .mp-total {
+    font-weight: 800;
+    font-size: 1.2em;
+    color: #1a202c;
+  }
+
+  .mp-payment-count {
+    font-size: 0.82em;
+    color: #718096;
+  }
+
+  .mp-chevron {
+    font-size: 0.7em;
+    color: #a0aec0;
+    transition: transform 0.25s ease, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #edf2f7;
+  }
+
+  .mp-row:hover .mp-chevron {
+    color: #4a5568;
+  }
+
+  .mp-row.expanded .mp-chevron {
+    transform: rotate(90deg);
+    background: #ebf8ff;
+    color: #2b6cb0;
+  }
+
+  /* Payment details dropdown */
+  .mp-payments {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    border-top: 0 solid #e2e8f0;
+  }
+
+  .mp-row.expanded .mp-payments {
+    max-height: 2000px;
+    border-top-width: 1px;
+  }
+
+  .mp-payments-inner {
+    padding: 16px 22px 20px;
+    background: #f7fafc;
+  }
+
+  .payment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    font-size: 0.88em;
+  }
+
+  .payment-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .payment-date {
+    color: #718096;
+    font-size: 0.92em;
+  }
+
+  .payment-value {
+    font-weight: 700;
+    color: #1a202c;
+    white-space: nowrap;
+  }
+
+  .payment-hours {
+    font-size: 0.82em;
+    color: #a0aec0;
+    margin-left: 8px;
+    font-weight: 500;
+  }
+
+  /* Loading / no data */
+  .loading {
+    text-align: center;
+    padding: 48px;
+    color: #718096;
+    font-size: 0.95em;
+  }
+
+  .loading::after {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #2b6cb0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .no-data {
+    text-align: center;
+    padding: 48px;
+    color: #718096;
+    font-style: italic;
+  }
+
+  footer {
+    text-align: center;
+    padding: 28px 24px;
+    color: #718096;
+    font-size: 0.84em;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 48px;
+    background: #fff;
+  }
+
+  footer a {
+    color: #2b6cb0;
+    text-decoration: none;
+    border-bottom: 1px solid #bee3f8;
+  }
+
+  footer a:hover {
+    border-bottom-color: #2b6cb0;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; }
+    #container { padding: 0 16px; margin: 20px auto; }
+    .mp-header { padding: 14px 16px; }
+    .mp-payments-inner { padding: 12px 16px 16px; }
+    .stat-card { padding: 14px 12px; }
+    #summary-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  header h1 a {
+    color: #fff;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+<header>
+<h1><a href="index.html">X MPs</a></h1>
+<nav><a href="about.html">About</a></nav>
+</header>
+<div id="container">
+<h1>X-funded MPs</h1>
+<p class="intro">
+    Members of Parliament receiving income from X Corp, sourced from the
+    <a href="https://publications.parliament.uk/pa/cm/cmregmem/contents2425.htm" target="_blank">Register of Members' Financial Interests</a>
+    via <a href="https://pages.mysociety.org/parl_register_interests/datasets/commons_rmfi/latest" target="_blank">TheyWorkForYou</a>.
+  </p>
+<p class="intro">This page shows MP's income from X since 1 January 2026, when news about the platform hosting non-consensual sexualised imagery started breaking.</p>
+<p>Ofcom <a href="https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/ofcom-launches-investigation-into-x-over-grok-sexualised-imagery" target="_blank">launched</a> an investigation into X on 12 January 2026 to assess whether X has facilitated the distribution of “intimate image abuse” and “sexualised images of children”.</p>
+<div class="data-freshness" id="data-freshness">
+<div class="data-freshness-item">
+<strong>Last recorded X payment:</strong>
+<span class="date" id="most-recent-entry-date">Loading...</span>
+</div>
+</div>
+<div id="summary-stats"></div>
+<div id="content-area">
+<div class="loading" id="loading">Loading data...</div>
+<div class="no-data" id="no-data" style="display:none;"></div>
+<div id="mp-list"></div>
+</div>
+</div>
+<footer>
+<p>Data from <a href="https://publications.parliament.uk/pa/cm/cmregmem/contents2425.htm" target="_blank">Register of Members' Financial Interests</a>. This is an independent project for transparency research.</p>
+</footer>
+<script type="module">
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+// Regex to detect X Corp / Twitter payer names
+const X_PAYER_REGEX = /\bx\s*corp\b|\bx\s+formerly\s+twitter\b/i;
+
+// Filter dates
+const CUTOFF_DATE = "2026-01-01";
+function isAfterCutoff(dateStr) {
+  if (!dateStr) return false;
+  return dateStr >= CUTOFF_DATE;
+}
+
+// Parse actual payment date from summary text like "Payment received on 21 January 2026 - ..."
+function parseDateFromSummary(summary) {
+  if (!summary) return null;
+  const match = summary.match(/(?:Payment received|Payment expected).+?on\s+(\d{1,2})\s+(\w+)\s+(\d{4})/i);
+  if (!match) return null;
+  const months = { january:"01", february:"02", march:"03", april:"04", may:"05", june:"06",
+                   july:"07", august:"08", september:"09", october:"10", november:"11", december:"12" };
+  const m = months[match[2].toLowerCase()];
+  if (!m) return null;
+  return `${match[3]}-${m}-${match[1].padStart(2, "0")}`;
+}
+
+function formatAmount(value) {
+  if (value >= 1000000) return (value / 1000000).toFixed(1) + "m";
+  if (value >= 1000) return (value / 1000).toFixed(1) + "k";
+  return value.toLocaleString();
+}
+
+function capitaliseFirst(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Helper to load CSV with optional supplement
+async function loadWithSupplement(mainPath, supplementPath) {
+  const mainData = await d3.csv(mainPath);
+  try {
+    const supplementData = await d3.csv(supplementPath);
+    const existingIds = new Set(mainData.map(d => d.id));
+    const newEntries = supplementData.filter(d => !existingIds.has(d.id));
+    return [...mainData, ...newEntries];
+  } catch (e) {
+    return mainData;
+  }
+}
+
+// DOM
+const loading = document.getElementById("loading");
+const noData = document.getElementById("no-data");
+const mpListEl = document.getElementById("mp-list");
+const summaryStats = document.getElementById("summary-stats");
+
+// Main data processing
+try {
+  // Load all employment data to find X Corp payers
+  const allEmployment = await loadWithSupplement(
+    "donation_data/mp_interests_employment.csv",
+    "donation_data/mp_interests_employment_supplement.csv"
+  );
+
+  // Find employment entries where payer is X Corp
+  const xEmployment = allEmployment.filter(d => X_PAYER_REGEX.test(d.payer_name || ""));
+  const xEmploymentIds = new Set(xEmployment.map(d => String(d.id)));
+
+  // Load all payments linked to X Corp employment
+  const adhocPayments = (await loadWithSupplement(
+    "donation_data/mp_interests_adhoc_payments.csv",
+    "donation_data/mp_interests_adhoc_payments_supplement.csv"
+  )).filter(d => xEmploymentIds.has(String(d.parent_interest_id)));
+
+  const ongoingPayments = (await loadWithSupplement(
+    "donation_data/mp_interests_ongoing_employment.csv",
+    "donation_data/mp_interests_ongoing_employment_supplement.csv"
+  )).filter(d => xEmploymentIds.has(String(d.parent_interest_id)));
+
+  const allPayments = [...adhocPayments, ...ongoingPayments];
+
+  // Also scan donations, gifts, and visits for X Corp entries
+  let xDonations = [];
+  let xGiftsUK = [];
+  let xGiftsIntl = [];
+  let xVisits = [];
+
+  try {
+    const donations = await d3.csv("donation_data/mp_interests_donations.csv");
+    xDonations = donations.filter(d => X_PAYER_REGEX.test(d.donor_name || d.summary || ""));
+  } catch (e) {}
+
+  try {
+    const giftsUK = await loadWithSupplement(
+      "donation_data/mp_interests_gifts_uk.csv",
+      "donation_data/mp_interests_gifts_uk_supplement.csv"
+    );
+    xGiftsUK = giftsUK.filter(d => X_PAYER_REGEX.test(d.donor_name || ""));
+  } catch (e) {}
+
+  try {
+    const giftsIntl = await loadWithSupplement(
+      "donation_data/mp_interests_gifts_intl.csv",
+      "donation_data/mp_interests_gifts_intl_supplement.csv"
+    );
+    xGiftsIntl = giftsIntl.filter(d => X_PAYER_REGEX.test(d.donor_name || ""));
+  } catch (e) {}
+
+  try {
+    const visits = await loadWithSupplement(
+      "donation_data/mp_interests_visits.csv",
+      "donation_data/mp_interests_visits_supplement.csv"
+    );
+    xVisits = visits.filter(d => X_PAYER_REGEX.test(d.donors__name_1 || d.donors_name_1 || ""));
+  } catch (e) {}
+
+  // Collect other X Corp items (filtered to post-cutoff)
+  const otherXItems = [
+    ...xDonations.filter(d => isAfterCutoff(d.received_date || d.registered)).map(d => ({
+      type: "Donation", value: parseFloat(d.value) || 0, date: d.received_date || d.registered,
+      description: d.payment_description || d.summary || "", member: d.member, twfy_id: d.twfy_id, mnis_id: d.mnis_id, party: d.party
+    })),
+    ...xGiftsUK.filter(d => isAfterCutoff(d.received_date || d.receiveddate || d.registered)).map(d => ({
+      type: "Gift (UK)", value: parseFloat(d.value) || 0, date: d.received_date || d.receiveddate || d.registered,
+      description: d.payment_description || d.summary || "", member: d.member, twfy_id: d.twfy_id, mnis_id: d.mnis_id, party: d.party
+    })),
+    ...xGiftsIntl.filter(d => isAfterCutoff(d.received_date || d.receiveddate || d.registered)).map(d => ({
+      type: "Gift (Intl)", value: parseFloat(d.value) || 0, date: d.received_date || d.receiveddate || d.registered,
+      description: d.payment_description || d.summary || "", member: d.member, twfy_id: d.twfy_id, mnis_id: d.mnis_id, party: d.party
+    })),
+    ...xVisits.filter(d => isAfterCutoff(d.start_date || d.registered)).map(d => ({
+      type: "Visit", value: parseFloat(d.donors__value_1 || d.donors_value_1) || 0, date: d.start_date || d.registered,
+      description: d.purpose || "", member: d.member, twfy_id: d.twfy_id, mnis_id: d.mnis_id, party: d.party
+    }))
+  ];
+
+  // Build per-MP data: only payments received after cutoff
+  const mpResults = [];
+
+  xEmployment.forEach(emp => {
+    const empId = String(emp.id);
+    const mpKey = emp.twfy_id || emp.mnis_id;
+    if (!mpKey) return;
+
+    // Get payments for this employment entry, filtered to post-cutoff
+    const payments = allPayments
+      .filter(p => String(p.parent_interest_id) === empId)
+      .filter(p => {
+        const isOngoing = p.regularity_of_payment && p.regularity_of_payment !== "";
+        if (isOngoing) {
+          const endDate = p.end_date;
+          if (!endDate || endDate === "") return true;
+          return isAfterCutoff(endDate);
+        } else {
+          const paymentDate = p.received_date || parseDateFromSummary(p.summary) || p.registered;
+          return isAfterCutoff(paymentDate);
+        }
+      })
+      .map(p => {
+        const actualDate = p.received_date || parseDateFromSummary(p.summary) || p.registered;
+        return {
+          value: parseFloat(p.value) || 0,
+          date: actualDate,
+          summary: p.summary || "",
+          hours: p.hours_worked || "",
+          hoursDetails: p.hours_details || ""
+        };
+      })
+      .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+    const total = payments.reduce((sum, p) => sum + p.value, 0);
+    const totalHours = payments.reduce((sum, p) => sum + (parseFloat(p.hours) || 0), 0);
+
+    if (payments.length > 0) {
+      mpResults.push({
+        name: emp.member || "Unknown",
+        party: emp.party || "",
+        payer: emp.payer_name || "X Corp",
+        jobTitle: emp.job_title || "",
+        payments,
+        total,
+        totalHours
+      });
+    }
+  });
+
+  // Add any other X Corp items (donations, gifts, visits) to existing or new MP entries
+  otherXItems.forEach(item => {
+    let existing = mpResults.find(mp => mp.name === item.member);
+    if (!existing) {
+      existing = {
+        name: item.member || "Unknown",
+        party: item.party || "",
+        payer: "X Corp",
+        jobTitle: "",
+        payments: [],
+        total: 0
+      };
+      mpResults.push(existing);
+    }
+    existing.payments.push({
+      value: item.value,
+      date: item.date,
+      summary: `[${item.type}] ${item.description}`,
+      hours: "",
+      hoursDetails: ""
+    });
+    existing.total += item.value;
+  });
+
+  // Re-sort payments within each MP and sort MPs by total descending
+  mpResults.forEach(mp => {
+    mp.payments.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  });
+  mpResults.sort((a, b) => b.total - a.total);
+
+  loading.style.display = "none";
+
+  if (mpResults.length === 0) {
+    noData.style.display = "block";
+    noData.textContent = "No MPs found with X Corp income received since 1 January 2026.";
+  } else {
+    // Summary stats
+    const grandTotal = mpResults.reduce((sum, mp) => sum + mp.total, 0);
+    const totalPayments = mpResults.reduce((sum, mp) => sum + mp.payments.length, 0);
+    const grandTotalHours = mpResults.reduce((sum, mp) => sum + (mp.totalHours || 0), 0);
+
+    summaryStats.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-value">${mpResults.length}</div>
+        <div class="stat-label">MPs receiving X income</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">&pound;${formatAmount(grandTotal)}</div>
+        <div class="stat-label">Received since 1 Jan 2026</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${totalPayments}</div>
+        <div class="stat-label">Individual payments</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${grandTotalHours}</div>
+        <div class="stat-label">Total hours declared</div>
+      </div>
+    `;
+
+    // Render MP list
+    mpListEl.innerHTML = mpResults.map((mp, i) => `
+      <div class="mp-row" data-index="${i}">
+        <div class="mp-header">
+          <div class="mp-info">
+            <span class="mp-name">${mp.name}</span>
+            <span class="mp-party">${capitaliseFirst(mp.party)}</span>
+          </div>
+          <div class="mp-right">
+            <div style="text-align:right">
+              <div class="mp-total">&pound;${mp.total.toLocaleString()}</div>
+              <div class="mp-payment-count">${mp.payments.length} payment${mp.payments.length !== 1 ? "s" : ""}${mp.totalHours ? " &middot; " + mp.totalHours + " hrs" : ""}</div>
+            </div>
+            <span class="mp-chevron">&#9654;</span>
+          </div>
+        </div>
+        <div class="mp-payments">
+          <div class="mp-payments-inner">
+            ${mp.payments.map(p => `
+              <div class="payment-item">
+                <span class="payment-date">Received ${p.date || "Unknown"}</span>
+                <span>
+                  <span class="payment-value">&pound;${p.value.toLocaleString()}</span>
+                  ${p.hours ? `<span class="payment-hours">(${p.hours} hrs)</span>` : ""}
+                </span>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    // Click to expand/collapse
+    mpListEl.querySelectorAll(".mp-header").forEach(header => {
+      header.addEventListener("click", () => {
+        header.closest(".mp-row").classList.toggle("expanded");
+      });
+    });
+  }
+
+// Data freshness: last recorded X payment (based on displayed data)
+const recentEntryEl = document.getElementById("most-recent-entry-date");
+
+const allDates = mpResults
+  .flatMap(mp => mp.payments.map(p => p.date))
+  .filter(Boolean)
+  .sort(); // YYYY-MM-DD sorts correctly as strings
+
+if (allDates.length) {
+  recentEntryEl.textContent = allDates[allDates.length - 1];
+} else {
+  recentEntryEl.textContent = "Unknown";
+}
+
+} catch (e) {
+  console.error("Failed to load data:", e);
+  loading.style.display = "none";
+  noData.style.display = "block";
+  noData.innerHTML = `<p><strong>Failed to load data</strong></p><p>${e.message}</p>`;
+}
+
+
+</script>
+</body>
+</html>
