@@ -4,7 +4,15 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>X MPs</title>
+<title>X MPs — MPs receiving income from X Corp</title>
+<meta name="description" content="Which MPs are receiving income from X Corp? A transparency tool tracking declared payments from the Register of Members' Financial Interests."/>
+<meta property="og:title" content="X MPs — MPs receiving income from X Corp"/>
+<meta property="og:description" content="Which MPs are receiving income from X Corp? A transparency tool tracking declared payments since January 2026."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://easterlymould.github.io/x-mps/"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="X MPs — MPs receiving income from X Corp"/>
+<meta name="twitter:description" content="Which MPs are receiving income from X Corp? A transparency tool tracking declared payments since January 2026."/>
 <style>
   * {
     box-sizing: border-box;
@@ -244,6 +252,18 @@
     color: #1a202c;
   }
 
+  .mp-link {
+    color: #1a202c;
+    text-decoration: none;
+    border-bottom: 1px solid #cbd5e0;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .mp-link:hover {
+    color: #2b6cb0;
+    border-bottom-color: #2b6cb0;
+  }
+
   .mp-party {
     font-size: 0.82em;
     color: #718096;
@@ -421,7 +441,7 @@
     <a href="https://publications.parliament.uk/pa/cm/cmregmem/contents2425.htm" target="_blank">Register of Members' Financial Interests</a>
     via <a href="https://pages.mysociety.org/parl_register_interests/datasets/commons_rmfi/latest" target="_blank">TheyWorkForYou</a>.
   </p>
-<p class="intro">This page shows MP's income from X since 1 January 2026, when news about the platform hosting non-consensual sexualised imagery started breaking.</p>
+<p class="intro">This page shows MPs' income from X since 1 January 2026, when news about the platform hosting non-consensual sexualised imagery started breaking.</p>
 <p>Ofcom <a href="https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/ofcom-launches-investigation-into-x-over-grok-sexualised-imagery" target="_blank">launched</a> an investigation into X on 12 January 2026 to assess whether X has facilitated the distribution of “intimate image abuse” and “sexualised images of children”.</p>
 <div class="data-freshness" id="data-freshness">
 <div class="data-freshness-item">
@@ -473,6 +493,18 @@ function formatAmount(value) {
 function capitaliseFirst(str) {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatDateHuman(dateStr) {
+  if (!dateStr) return "Unknown";
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  const monthNames = ["January","February","March","April","May","June",
+                      "July","August","September","October","November","December"];
+  const day = parseInt(parts[2], 10);
+  const month = monthNames[parseInt(parts[1], 10) - 1];
+  if (!month) return dateStr;
+  return `${day} ${month} ${parts[0]}`;
 }
 
 // Helper to load CSV with optional supplement
@@ -617,6 +649,7 @@ try {
         party: emp.party || "",
         payer: emp.payer_name || "X Corp",
         jobTitle: emp.job_title || "",
+        twfyId: emp.twfy_id || "",
         payments,
         total,
         totalHours
@@ -633,6 +666,7 @@ try {
         party: item.party || "",
         payer: "X Corp",
         jobTitle: "",
+        twfyId: item.twfy_id || "",
         payments: [],
         total: 0
       };
@@ -687,9 +721,9 @@ try {
     // Render MP list
     mpListEl.innerHTML = mpResults.map((mp, i) => `
       <div class="mp-row" data-index="${i}">
-        <div class="mp-header">
+        <div class="mp-header" role="button" tabindex="0" aria-expanded="false" aria-controls="mp-payments-${i}">
           <div class="mp-info">
-            <span class="mp-name">${mp.name}</span>
+            <span class="mp-name">${mp.twfyId ? `<a href="https://www.theyworkforyou.com/mp/${mp.twfyId}" target="_blank" rel="noopener" class="mp-link">${mp.name}</a>` : mp.name}</span>
             <span class="mp-party">${capitaliseFirst(mp.party)}</span>
           </div>
           <div class="mp-right">
@@ -697,14 +731,14 @@ try {
               <div class="mp-total">&pound;${mp.total.toLocaleString()}</div>
               <div class="mp-payment-count">${mp.payments.length} payment${mp.payments.length !== 1 ? "s" : ""}${mp.totalHours ? " &middot; " + mp.totalHours + " hrs" : ""}</div>
             </div>
-            <span class="mp-chevron">&#9654;</span>
+            <span class="mp-chevron" aria-hidden="true">&#9654;</span>
           </div>
         </div>
-        <div class="mp-payments">
+        <div class="mp-payments" id="mp-payments-${i}" role="region" aria-label="Payments for ${mp.name}">
           <div class="mp-payments-inner">
             ${mp.payments.map(p => `
               <div class="payment-item">
-                <span class="payment-date">Received ${p.date || "Unknown"}</span>
+                <span class="payment-date">Received ${formatDateHuman(p.date)}</span>
                 <span>
                   <span class="payment-value">&pound;${p.value.toLocaleString()}</span>
                   ${p.hours ? `<span class="payment-hours">(${p.hours} hrs)</span>` : ""}
@@ -716,10 +750,21 @@ try {
       </div>
     `).join("");
 
-    // Click to expand/collapse
+    // Click/keyboard to expand/collapse
+    function toggleRow(header, e) {
+      // Don't toggle if clicking the MP profile link
+      if (e && e.target.closest(".mp-link")) return;
+      const row = header.closest(".mp-row");
+      const isExpanded = row.classList.toggle("expanded");
+      header.setAttribute("aria-expanded", isExpanded);
+    }
     mpListEl.querySelectorAll(".mp-header").forEach(header => {
-      header.addEventListener("click", () => {
-        header.closest(".mp-row").classList.toggle("expanded");
+      header.addEventListener("click", (e) => toggleRow(header, e));
+      header.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleRow(header, e);
+        }
       });
     });
   }
@@ -733,7 +778,7 @@ const allDates = mpResults
   .sort(); // YYYY-MM-DD sorts correctly as strings
 
 if (allDates.length) {
-  recentEntryEl.textContent = allDates[allDates.length - 1];
+  recentEntryEl.textContent = formatDateHuman(allDates[allDates.length - 1]);
 } else {
   recentEntryEl.textContent = "Unknown";
 }
