@@ -1,0 +1,44 @@
+name: Sync donation_data from private repo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout site repo
+        uses: actions/checkout@v4
+
+      - name: Checkout private repo (tctk)
+        uses: actions/checkout@v4
+        with:
+          repository: easterlymould/tctk
+          token: ${{ secrets.TCTK_READ_TOKEN }}
+          path: _tctk
+
+      - name: Replace donation_data
+        run: |
+          rm -rf donation_data
+          mkdir donation_data
+          rsync -av --delete "_tctk/donation_data/" "donation_data/"
+
+      - name: Commit & push if changed
+        run: |
+          if git diff --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add donation_data
+          git commit -m "Update donation_data from easterlymould/tctk"
+          git push
